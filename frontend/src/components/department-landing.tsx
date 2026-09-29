@@ -1,0 +1,10 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, BookOpen, PencilRuler } from "lucide-react";
+import { ProductGrid } from "./product-grid";
+import type { CatalogCategory, DepartmentSlug, Product } from "@/data/catalog";
+
+export function DepartmentLanding({ department, title, intro, subcategories, products }: { department: DepartmentSlug; title: string; intro: string; subcategories: CatalogCategory[]; products: Product[] }) {
+  const Icon = department === "books" ? BookOpen : PencilRuler;
+  return <><section className={`department-hero ${department}`}><div className="shell department-hero-inner"><div><span className="department-icon"><Icon /></span><span className="kicker">Vidyarthi {title}</span><h1>{title} for every learner and every need.</h1><p>{intro}</p><a className="button primary" href="#department-products">Browse all {title.toLowerCase()}</a></div><Image src={department === "books" ? "/images/products/story-books.webp" : "/images/products/office-set.webp"} alt="" width={520} height={390} priority /></div></section><section className="section department-subcategories"><div className="shell"><div className="section-head"><div><span className="kicker">Browse inside {title}</span><h2>Choose a subcategory</h2><p>Open a section to see only the products that belong to it.</p></div></div><div className={`subcategory-grid ${department}`}>{subcategories.map((category) => <Link href={`/${department}/${category.slug}`} className="subcategory-card" key={category.slug} style={{ backgroundColor: category.color }}><Image src={category.image} alt="" width={190} height={145} /><div><h3>{category.name}</h3><p>{category.short}</p><span>View products <ArrowRight /></span></div></Link>)}</div></div></section><section className="section soft-section" id="department-products"><div className="shell"><div className="section-head"><div><span className="kicker">All {title}</span><h2>Products in {title}</h2><p>{products.length} sample products are included in this static catalog.</p></div></div><ProductGrid products={products} /></div></section></>;
+}

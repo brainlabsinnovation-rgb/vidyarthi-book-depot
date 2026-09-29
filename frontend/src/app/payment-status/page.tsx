@@ -1,0 +1,3 @@
+import Link from "next/link";
+import { CheckCircle2, ReceiptText } from "lucide-react";
+export default function PaymentStatus(){return <section className="section"><div className="shell success-card"><CheckCircle2/><span className="kicker">Payment successful</span><h1>Your order has been confirmed.</h1><p>Thank you for your purchase. You can open the order to review its products, payment and fulfilment progress.</p><b>Order VBD-2026-1042 • ₹1,307</b><div className="success-actions"><Link className="button primary" href="/orders/VBD-2026-1042"><ReceiptText/> View order</Link><Link className="button secondary" href="/">Continue shopping</Link></div></div></section>}

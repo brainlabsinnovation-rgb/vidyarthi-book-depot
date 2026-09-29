@@ -1,0 +1,6 @@
+"use client";
+import Link from "next/link";
+import { useState } from "react";
+import { LockKeyhole, ShieldCheck } from "lucide-react";
+import { Brand } from "@/components/brand";
+export default function AdminLogin(){const [logged,setLogged]=useState(false);return <section className="admin-login"><div className="admin-login-card"><Brand/><span className="account-icon"><LockKeyhole/></span><h1>Store administration</h1><p>Sign in to manage products, categories, orders, inventory, offers and website content.</p>{logged?<div className="demo-success"><ShieldCheck/><span><strong>Demo sign-in successful</strong><small>Continue to the static management dashboard.</small></span><Link className="button primary" href="/admin">Open dashboard</Link></div>:<form onSubmit={e=>{e.preventDefault();setLogged(true)}}><label>Email address<input type="email" placeholder="admin@Vidyarthibookdepot.in" required/></label><label>Password<input type="password" placeholder="Enter password" required/></label><div className="login-options"><label><input type="checkbox"/> Remember me</label><button type="button">Forgot password?</button></div><button className="button primary" type="submit">Sign in</button><small>Use any valid-looking details in this static preview.</small></form>}<Link className="back-store" href="/">← Return to storefront</Link></div></section>}

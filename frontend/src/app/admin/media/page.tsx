@@ -1,0 +1,7 @@
+"use client";
+import Image from "next/image";
+import { useState } from "react";
+import { CheckCircle2, ImagePlus, Search, UploadCloud } from "lucide-react";
+import { AdminShell } from "@/components/admin-shell";
+const images=["color-pencils.webp","school-backpack.webp","spiral-notebooks.webp","story-books.webp","watercolors.webp","gel-pens.webp","water-bottle.webp","geometry-box.webp","gift-box.webp","desk-organizer.webp","crayons.webp","office-set.webp"];
+export default function Media(){const [uploaded,setUploaded]=useState("");return <AdminShell title="Media library" description="Manage product images, category art, homepage banners and offer creatives."><div className="admin-toolbar"><div><Search/><input placeholder="Search media"/></div><label className="button primary upload-button"><UploadCloud/> Upload media<input type="file" onChange={e=>setUploaded(e.target.files?.[0]?.name||"")}/></label></div>{uploaded&&<div className="demo-success"><CheckCircle2/><span><strong>{uploaded} added to the preview</strong><small>It will be stored in object storage after backend integration.</small></span></div>}<section className="admin-panel media-panel"><div className="media-grid">{images.map(name=><button key={name}><Image src={`/images/products/${name}`} alt="" width={240} height={180}/><span>{name.replace(".webp","").replaceAll("-"," ")}</span></button>)}<label className="media-add"><ImagePlus/><strong>Add another file</strong><input type="file"/></label></div></section></AdminShell>}

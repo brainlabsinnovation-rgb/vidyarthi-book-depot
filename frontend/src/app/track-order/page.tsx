@@ -1,0 +1,5 @@
+"use client";
+import Link from "next/link";
+import { PackageSearch } from "lucide-react";
+import { useState } from "react";
+export default function TrackOrderPage() { const [show,setShow] = useState(false); return <><section className="page-hero"><div className="shell"><div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>Track order</span></div><h1>Where is your order?</h1><p>Enter your order details to see the latest status.</p></div></section><section className="section"><div className="shell track-card"><PackageSearch /><h2>Track your purchase</h2><label>Order number<input placeholder="For example VBD-2026-1042" /></label><label>Mobile number<input placeholder="Mobile number used at checkout" /></label><button className="button primary" onClick={() => setShow(true)}>Track order</button>{show && <div className="track-result"><strong>Ready for pickup</strong><p>Your order has been prepared. Please show the order number at the pickup counter.</p></div>}</div></section></>; }

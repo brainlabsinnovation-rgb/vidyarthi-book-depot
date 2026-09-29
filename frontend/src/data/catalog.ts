@@ -1,0 +1,93 @@
+export type DepartmentSlug = "books" | "stationery";
+
+export type Product = {
+  slug: string;
+  name: string;
+  department: DepartmentSlug;
+  departmentName: string;
+  subcategory: string;
+  subcategorySlug: string;
+  category: string;
+  categorySlug: string;
+  price: number;
+  mrp: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  badge?: string;
+  short: string;
+  description: string;
+  specs: Record<string, string>;
+};
+
+export type CatalogCategory = {
+  slug: string;
+  name: string;
+  short: string;
+  image: string;
+  color: string;
+  department: DepartmentSlug;
+};
+
+export const departments = [
+  { slug: "books" as const, name: "Books", short: "School, children’s, exam, academic and general reading", image: "/images/products/story-books.webp", color: "#e8f5ee" },
+  { slug: "stationery" as const, name: "Stationery", short: "Writing, notebooks, school, art, office and gifting essentials", image: "/images/products/office-set.webp", color: "#fff1d5" },
+];
+
+export const bookSubcategories: CatalogCategory[] = [
+  { slug: "school-textbooks", name: "School Textbooks", short: "Class-wise books and learning companions", image: "/images/products/story-books.webp", color: "#e7f3ff", department: "books" },
+  { slug: "childrens-books", name: "Children’s Books", short: "Stories, activities and early learning", image: "/images/products/story-books.webp", color: "#fff0df", department: "books" },
+  { slug: "competitive-exams", name: "Competitive Exams", short: "Practice, aptitude and entrance preparation", image: "/images/products/story-books.webp", color: "#eee8ff", department: "books" },
+  { slug: "academic-reference", name: "Academic & Reference", short: "Dictionaries, guides and reference books", image: "/images/products/story-books.webp", color: "#e8f7ef", department: "books" },
+  { slug: "general-reading", name: "General Reading", short: "Fiction, knowledge and inspiring reads", image: "/images/products/story-books.webp", color: "#fff1ef", department: "books" },
+];
+
+export const stationerySubcategories: CatalogCategory[] = [
+  { slug: "writing-supplies", name: "Writing Supplies", short: "Pens, pencils, erasers and sharpeners", image: "/images/products/gel-pens.webp", color: "#fff1c7", department: "stationery" },
+  { slug: "notebooks-paper", name: "Notebooks & Paper", short: "Notebooks, registers, sheets and files", image: "/images/products/spiral-notebooks.webp", color: "#dff5ed", department: "stationery" },
+  { slug: "school-essentials", name: "School Essentials", short: "Bags, bottles, geometry and more", image: "/images/products/school-backpack.webp", color: "#e2ecff", department: "stationery" },
+  { slug: "art-craft", name: "Art & Craft", short: "Colours, paints, brushes and DIY supplies", image: "/images/products/watercolors.webp", color: "#ffe2e4", department: "stationery" },
+  { slug: "office-supplies", name: "Office Supplies", short: "Desk, filing and workplace essentials", image: "/images/products/office-set.webp", color: "#e9efff", department: "stationery" },
+  { slug: "gifts-return-gifts", name: "Gifts & Return Gifts", short: "Thoughtful gifts and bulk party packs", image: "/images/products/gift-box.webp", color: "#f2e5ff", department: "stationery" },
+];
+
+export const categories = [...bookSubcategories, ...stationerySubcategories];
+
+const stationery = (data: Omit<Product, "department" | "departmentName" | "category" | "categorySlug">): Product => ({
+  ...data,
+  department: "stationery",
+  departmentName: "Stationery",
+  category: data.subcategory,
+  categorySlug: data.subcategorySlug,
+});
+
+const book = (data: Omit<Product, "department" | "departmentName" | "category" | "categorySlug">): Product => ({
+  ...data,
+  department: "books",
+  departmentName: "Books",
+  category: data.subcategory,
+  categorySlug: data.subcategorySlug,
+});
+
+export const products: Product[] = [
+  stationery({ slug: "artist-colour-pencils-24", name: "Artist Colour Pencils — 24 Shades", subcategory: "Art & Craft", subcategorySlug: "art-craft", price: 299, mrp: 360, rating: 4.8, reviews: 124, image: "/images/products/color-pencils.webp", badge: "Bestseller", short: "Bright colours for school and creativity", description: "A smooth, richly pigmented colour pencil set for school projects, colouring, sketching and creative play.", specs: { "Pack size": "24 shades", "Ideal for": "Age 5+", Material: "Wood", "Product type": "Colour pencils" } }),
+  stationery({ slug: "campus-school-backpack-20l", name: "Campus School Backpack — 20L", subcategory: "School Essentials", subcategorySlug: "school-essentials", price: 899, mrp: 1199, rating: 4.6, reviews: 86, image: "/images/products/school-backpack.webp", badge: "New arrival", short: "Spacious, padded and ready for every day", description: "A comfortable everyday school backpack with padded straps, organised compartments and a bottle pocket.", specs: { Capacity: "20 litres", Compartments: "3", Material: "Water-resistant polyester", Colour: "Navy" } }),
+  stationery({ slug: "a5-spiral-notebooks-pack-4", name: "A5 Spiral Notebooks — Pack of 4", subcategory: "Notebooks & Paper", subcategorySlug: "notebooks-paper", price: 239, mrp: 299, rating: 4.7, reviews: 342, image: "/images/products/spiral-notebooks.webp", badge: "20% off", short: "200 pages • Ruled • Four colours", description: "Compact ruled notebooks with smooth paper and durable spiral binding for school, college and everyday notes.", specs: { Size: "A5", Pages: "200 each", Ruling: "Single line", Quantity: "Pack of 4" } }),
+  book({ slug: "young-readers-story-set", name: "Young Readers Story Set — 4 Books", subcategory: "Children’s Books", subcategorySlug: "childrens-books", price: 599, mrp: 799, rating: 4.8, reviews: 58, image: "/images/products/story-books.webp", badge: "Editor’s pick", short: "Colourful stories for curious young minds", description: "A set of four engaging illustrated stories selected to build reading confidence and encourage imagination.", specs: { Language: "English", Binding: "Paperback", "Age group": "6–10 years", Quantity: "4 books" } }),
+  book({ slug: "class-10-mathematics-companion", name: "Class 10 Mathematics Companion", subcategory: "School Textbooks", subcategorySlug: "school-textbooks", price: 425, mrp: 499, rating: 4.7, reviews: 188, image: "/images/products/story-books.webp", badge: "School pick", short: "Concepts, solved examples and practice papers", description: "A structured mathematics companion with clear concepts, solved examples and revision exercises for Class 10 learners.", specs: { Class: "10", Subject: "Mathematics", Language: "English", Binding: "Paperback" } }),
+  book({ slug: "quantitative-aptitude-practice-book", name: "Quantitative Aptitude Practice Book", subcategory: "Competitive Exams", subcategorySlug: "competitive-exams", price: 379, mrp: 475, rating: 4.6, reviews: 214, image: "/images/products/story-books.webp", badge: "Exam favourite", short: "Topic-wise practice with solved answers", description: "A comprehensive aptitude workbook for entrance and competitive exam preparation with graded practice sets.", specs: { Subject: "Quantitative aptitude", Level: "Competitive exams", Language: "English", Format: "Practice guide" } }),
+  book({ slug: "student-knowledge-encyclopedia", name: "Student Knowledge Encyclopedia", subcategory: "Academic & Reference", subcategorySlug: "academic-reference", price: 749, mrp: 899, rating: 4.9, reviews: 96, image: "/images/products/story-books.webp", badge: "Reference pick", short: "Illustrated facts across science and the world", description: "An illustrated reference book covering science, geography, history, nature and useful general knowledge.", specs: { Format: "Hardcover", Pages: "320", Language: "English", "Age group": "9+" } }),
+  book({ slug: "inspiring-stories-collection", name: "Inspiring Stories Collection", subcategory: "General Reading", subcategorySlug: "general-reading", price: 549, mrp: 699, rating: 4.8, reviews: 77, image: "/images/products/story-books.webp", short: "Thoughtful stories for growing readers", description: "A warm collection of inspiring stories about curiosity, kindness, courage and learning.", specs: { Language: "English", Binding: "Paperback", "Age group": "10+", Quantity: "5 books" } }),
+  stationery({ slug: "watercolour-creative-kit", name: "Watercolour Creative Kit", subcategory: "Art & Craft", subcategorySlug: "art-craft", price: 449, mrp: 599, rating: 4.7, reviews: 112, image: "/images/products/watercolors.webp", badge: "25% off", short: "12 colours • Brush included", description: "A beginner-friendly watercolour set with bright shades and a brush for painting, school activities and hobby art.", specs: { Colours: "12", Includes: "Paints and brush", "Age group": "6+", Finish: "Washable" } }),
+  stationery({ slug: "smooth-gel-pens-pack-6", name: "Smooth Gel Pens — Pack of 6", subcategory: "Writing Supplies", subcategorySlug: "writing-supplies", price: 169, mrp: 199, rating: 4.6, reviews: 276, image: "/images/products/gel-pens.webp", badge: "Popular", short: "Quick-dry ink • Multicolour", description: "Six comfortable gel pens with smooth-flowing, quick-dry ink for notes, journaling and colourful study plans.", specs: { Quantity: "6 pens", "Tip size": "0.5 mm", Ink: "Gel", Colours: "Assorted" } }),
+  stationery({ slug: "steel-water-bottle-750ml", name: "Steel Water Bottle — 750 ml", subcategory: "School Essentials", subcategorySlug: "school-essentials", price: 549, mrp: 699, rating: 4.5, reviews: 94, image: "/images/products/water-bottle.webp", short: "Leak-resistant • Easy to carry", description: "A durable stainless steel bottle with a secure lid, suitable for school, office and travel.", specs: { Capacity: "750 ml", Material: "Stainless steel", Colour: "Teal", Care: "Hand wash" } }),
+  stationery({ slug: "precision-geometry-box", name: "Precision Geometry Box", subcategory: "School Essentials", subcategorySlug: "school-essentials", price: 225, mrp: 275, rating: 4.7, reviews: 155, image: "/images/products/geometry-box.webp", short: "Complete exam-ready instrument set", description: "A sturdy geometry set with the essential measuring and drawing instruments required for school mathematics.", specs: { Includes: "Compass, divider, ruler, set squares, protractor", Case: "Metal", "Age group": "10+", Pieces: "8" } }),
+  stationery({ slug: "celebration-gift-box", name: "Celebration Gift Box", subcategory: "Gifts & Return Gifts", subcategorySlug: "gifts-return-gifts", price: 699, mrp: 899, rating: 4.9, reviews: 42, image: "/images/products/gift-box.webp", badge: "Gift favourite", short: "Ready to gift • Thoughtfully packed", description: "A cheerful ready-to-gift box for birthdays, congratulations and special occasions.", specs: { Occasion: "All occasions", Packaging: "Gift wrapped", Personalisation: "Available in store", "Age group": "All ages" } }),
+  stationery({ slug: "pastel-desk-organiser", name: "Pastel Desk Organiser Set", subcategory: "Office Supplies", subcategorySlug: "office-supplies", price: 399, mrp: 499, rating: 4.6, reviews: 61, image: "/images/products/desk-organizer.webp", short: "Pens, notes and clips in one tidy place", description: "A compact pastel organiser with compartments for pens, sticky notes and small desk accessories.", specs: { Material: "ABS", Compartments: "4", Includes: "Sticky notes", Colour: "Mint" } }),
+  stationery({ slug: "party-crayon-return-gift", name: "Crayon Party Return Gift — Pack of 10", subcategory: "Gifts & Return Gifts", subcategorySlug: "gifts-return-gifts", price: 749, mrp: 999, rating: 4.8, reviews: 73, image: "/images/products/crayons.webp", badge: "Bulk value", short: "Ten colourful creative gift packs", description: "A ready-to-distribute set of colourful crayon packs for birthdays, school events and activity parties.", specs: { Quantity: "10 gift packs", "Age group": "3+", Theme: "Creative", Packaging: "Individual packs" } }),
+  stationery({ slug: "everyday-office-desk-kit", name: "Everyday Office Desk Kit", subcategory: "Office Supplies", subcategorySlug: "office-supplies", price: 525, mrp: 650, rating: 4.5, reviews: 38, image: "/images/products/office-set.webp", short: "A tidy set of daily desk essentials", description: "A coordinated desk set with an organiser, scissors, stapler, notes and clips for work or study.", specs: { Pieces: "8", Colour: "Mint and cream", Material: "Mixed", "Ideal for": "Office and study" } }),
+];
+
+export const productsByDepartment = (department: DepartmentSlug) => products.filter((product) => product.department === department);
+export const subcategoriesFor = (department: DepartmentSlug) => department === "books" ? bookSubcategories : stationerySubcategories;
+export const formatPrice = (value: number) => `₹${value.toLocaleString("en-IN")}`;

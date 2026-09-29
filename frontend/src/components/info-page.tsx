@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function InfoPage({ title, intro, sections }: { title: string; intro: string; sections: { title: string; body: string }[] }) { return <><section className="page-hero"><div className="shell"><div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>{title}</span></div><h1>{title}</h1><p>{intro}</p></div></section><section className="section"><article className="shell prose-card">{sections.map((section) => <section key={section.title}><h2>{section.title}</h2><p>{section.body}</p></section>)}</article></section></>; }
