@@ -1,2 +1,22 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { AdminTablePage } from "@/components/admin-table-page";
-export default function AdminOrders(){return <AdminTablePage title="Orders" description="Review payments, prepare products and update fulfilment." button="Create manual order" actionHref="/admin/orders/new" columns={["Order","Customer","Method","Items","Total","Status","Placed"]} rows={[["#1042","Sample Customer","Store pickup","3","₹1,307","Ready","10:42 AM"],["#1041","Demo Buyer","Delivery","1","₹749","Paid","10:18 AM"],["#1040","Preview Account","Delivery","5","₹2,148","Packing","9:55 AM"]]} rowHrefs={["/admin/orders/1042","/admin/orders/1041","/admin/orders/1040"]} />}
+import { formatPrice } from "@/data/catalog";
+
+type Order = { id: string; number: string; customer: string; fulfilment: string; itemCount: number; totalPaise: number; status: string; placedAt: string };
+
+export default function AdminOrders() {
+  const [items, setItems] = useState<Order[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/store/admin/orders", { signal: controller.signal, credentials: "include" })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Orders could not be loaded")))
+      .then((data) => setItems(data.items))
+      .catch((reason) => { if (reason?.name !== "AbortError") setError(reason.message); });
+    return () => controller.abort();
+  }, []);
+  const rows = items.map((item) => [item.number, item.customer, item.fulfilment, String(item.itemCount), formatPrice(item.totalPaise / 100), item.status, new Date(item.placedAt).toLocaleString("en-IN")]);
+  return <AdminTablePage title="Orders" description={error || "Review real orders and payment status. Checkout will begin creating orders after Razorpay is connected."} columns={["Order","Customer","Method","Items","Total","Status","Placed"]} rows={rows} rowHrefs={items.map((item) => `/admin/orders/${item.id}`)} />;
+}

@@ -1,3 +1,8 @@
-import Link from "next/link";
-import { DemoForm } from "@/components/demo-form";
-export default function ForgotPassword(){return <><section className="page-hero compact-hero"><div className="shell"><div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><Link href="/account">Account</Link><span>/</span><span>Reset password</span></div><h1>Reset your password</h1><p>We will send a secure reset link or verification code.</p></div></section><section className="section"><DemoForm className="customer-form-card narrow-form" submitLabel="Send reset instructions" successTitle="Reset instructions preview sent"><label>Email or mobile number<input placeholder="Enter your registered email or mobile" required/></label><p><Link href="/account">← Return to sign in</Link></p></DemoForm></section></>}
+import { CustomerPasswordReset } from "@/components/customer-password-reset";
+import { CustomerPhoneRecovery } from "@/components/customer-phone-recovery";
+import { safeReturnPath } from "@/lib/customer-auth";
+export default async function ForgotPassword({ searchParams }: { searchParams: Promise<{ next?: string; method?: string }> }) {
+  const params = await searchParams;
+  if (params.method === "phone") return <CustomerPhoneRecovery nextPath={safeReturnPath(params.next)} />;
+  return <CustomerPasswordReset nextPath={safeReturnPath(params.next)} />;
+}

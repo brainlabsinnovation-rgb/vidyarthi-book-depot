@@ -1,3 +1,6 @@
-import Link from "next/link";
-import { DemoForm } from "@/components/demo-form";
-export default function Register(){return <><section className="page-hero compact-hero"><div className="shell"><div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><Link href="/account">Account</Link><span>/</span><span>Create account</span></div><h1>Create your account</h1><p>Save addresses, wishlists and order history in one place.</p></div></section><section className="section"><DemoForm className="customer-form-card" submitLabel="Create account" successTitle="Account preview created"><div className="form-grid"><label>First name<input placeholder="First name" required/></label><label>Last name<input placeholder="Last name" required/></label><label className="full">Mobile number<input placeholder="+91 00000 00000" required/></label><label className="full">Email address<input type="email" placeholder="you@example.com" required/></label><label>Password<input type="password" placeholder="Create password" required/></label><label>Confirm password<input type="password" placeholder="Repeat password" required/></label><label className="check-field full"><input type="checkbox" required/><span><strong>I agree to the Terms and Privacy Policy</strong></span></label></div><p>Already registered? <Link href="/account">Sign in</Link></p></DemoForm></section></>}
+import { CustomerAuthForm } from "@/components/customer-auth-form";
+import { safeReturnPath } from "@/lib/customer-auth";
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const params = await searchParams;
+  return <CustomerAuthForm mode="signup" nextPath={safeReturnPath(params.next)} />;
+}

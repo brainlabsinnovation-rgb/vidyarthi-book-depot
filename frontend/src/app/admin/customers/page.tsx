@@ -1,2 +1,22 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { AdminTablePage } from "@/components/admin-table-page";
-export default function Customers(){return <AdminTablePage title="Customers" description="Review customer profiles, addresses and order activity." columns={["Customer","Mobile","Orders","Spent","Last order","Status"]} rows={[["Sample Customer","+91 98765 43210","8","₹6,420","Today","Active"],["Demo Buyer","+91 98765 12345","3","₹2,199","Yesterday","Active"],["Preview Account","+91 98765 98765","12","₹11,780","3 days ago","Active"],["Guest Customer","+91 98765 45678","1","₹449","1 week ago","Guest"]]} rowHrefs={["/admin/customers/sample-customer","/admin/customers/demo-buyer","/admin/customers/preview-account","/admin/customers/guest-customer"]} />}
+import { formatPrice } from "@/data/catalog";
+
+type Customer = { id: string; name: string; phone: string | null; orderCount: number; spentPaise: number; lastOrderAt: string | null };
+
+export default function Customers() {
+  const [items, setItems] = useState<Customer[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/store/admin/customers", { signal: controller.signal, credentials: "include" })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Customers could not be loaded")))
+      .then((data) => setItems(data.items))
+      .catch((reason) => { if (reason?.name !== "AbortError") setError(reason.message); });
+    return () => controller.abort();
+  }, []);
+  const rows = items.map((item) => [item.name, item.phone ?? "—", String(item.orderCount), formatPrice(item.spentPaise / 100), item.lastOrderAt ? new Date(item.lastOrderAt).toLocaleDateString("en-IN") : "—", "Active"]);
+  return <AdminTablePage title="Customers" description={error || "Review customers created through real orders."} columns={["Customer","Mobile","Orders","Spent","Last order","Status"]} rows={rows} rowHrefs={items.map((item) => `/admin/customers/${item.id}`)} />;
+}

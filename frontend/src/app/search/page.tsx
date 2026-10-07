@@ -1,5 +1,10 @@
-import Link from "next/link";
-import { Search } from "lucide-react";
-import { ProductGrid } from "@/components/product-grid";
-import { products } from "@/data/catalog";
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) { const params = await searchParams; const q = Array.isArray(params.q) ? params.q[0] : (params.q || ""); const term = q.toLowerCase(); const matches = term ? products.filter((product) => `${product.name} ${product.category} ${product.short}`.toLowerCase().includes(term)) : products; return <><section className="page-hero"><div className="shell"><div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>Search</span></div><h1>{q ? `Results for “${q}”` : "Search our store"}</h1><p>{q ? `${matches.length} matching products in this static catalog.` : "Use the search bar to find stationery, books, gifts and school essentials."}</p></div></section><section className="section"><div className="shell">{matches.length ? <ProductGrid products={matches} /> : <div className="empty-state"><Search /><h2>We could not find that product.</h2><p>Try a category such as notebooks, art, books or gifts.</p><Link className="button primary" href="/shop">Browse all products</Link></div>}</div></section></>; }
+import { CatalogPage } from "@/components/catalog-page";
+import { getProducts } from "@/lib/catalog-api";
+
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
+  const params = await searchParams;
+  const q = (Array.isArray(params.q) ? params.q[0] : params.q ?? "").trim();
+  const query = q ? { q } : {};
+  const result = await getProducts(query);
+  return <CatalogPage title={q ? `Results for “${q}”` : "Search our store"} description={q ? `Search results for ${q}.` : "Find books, stationery, gifts and school essentials."} items={result.items} total={result.total} query={query} />;
+}

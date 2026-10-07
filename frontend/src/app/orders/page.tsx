@@ -1,3 +1,18 @@
+"use client";
 import Link from "next/link";
-import { Package, Search } from "lucide-react";
-export default function OrdersPage() { return <><section className="page-hero"><div className="shell"><div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>Orders</span></div><h1>Your orders</h1><p>Review current orders and previous purchases.</p></div></section><section className="section"><div className="shell"><div className="sample-order"><div className="sample-order-head"><div><small>DEMO ORDER</small><strong>VBD-2026-1042</strong></div><span>Ready for pickup</span></div><div className="order-progress"><i className="done"><b>1</b><span>Confirmed</span></i><i className="done"><b>2</b><span>Prepared</span></i><i className="active"><b>3</b><span>Ready</span></i><i><b>4</b><span>Collected</span></i></div><div className="sample-order-actions"><Package /><p>This sample order demonstrates how live order status will look after backend integration.</p><Link className="button primary" href="/orders/VBD-2026-1042">View order details</Link><Link className="button secondary" href="/track-order">Track another order</Link></div></div><div className="empty-state small-empty"><Search /><h2>Looking for another order?</h2><p>Use the order number and customer mobile number on the tracking page.</p></div></div></section></>; }
+import { useEffect, useState } from "react";
+import { AccountShell } from "@/components/account-shell";
+import { useCustomerAuth } from "@/components/customer-auth-provider";
+import { formatPrice } from "@/data/catalog";
+type Order = { number: string; status: string; totalPaise: number; placedAt: string };
+export default function OrdersPage() {
+  const { user,status }=useCustomerAuth(); const [orders,setOrders]=useState<Order[]|null>(null); const [error,setError]=useState("");
+  useEffect(() => {
+    if(status!=="signed-in")return;
+    const controller=new AbortController();
+    fetch("/api/store/customer/orders",{signal:controller.signal,credentials:"include"}).then((r)=>r.ok?r.json():Promise.reject()).then((data)=>setOrders(data.items))
+      .catch(()=>{if(!controller.signal.aborted)setError("Your orders could not be loaded.");});
+    return()=>controller.abort();
+  },[status,user?.id]);
+  return <AccountShell title="Your orders" intro="Only orders placed with your account appear here." nextPath="/orders">{error?<p role="alert">{error}</p>:orders?.length?orders.map((order)=><article className="account-panel" key={order.number}><h2>{order.number}</h2><p>{order.status.replaceAll("_"," ")} · {formatPrice(order.totalPaise/100)}</p><Link href={`/orders/${encodeURIComponent(order.number)}`}>View order</Link></article>):<section className="account-panel"><h2>{orders?"No orders yet":"Loading your orders…"}</h2><p>Your purchases will appear here after orders are available.</p><Link className="button primary" href="/shop">Browse products</Link></section>}</AccountShell>;
+}
