@@ -3,8 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { useCustomerAuth } from "@/components/customer-auth-provider";
+import { verifiedUser } from "@/lib/customer-auth";
 import { useShop } from "@/components/shop-provider";
 import { formatPrice } from "@/data/catalog";
+import { useCartQuote } from "@/lib/use-cart-quote";
 
 export default function CartPage() {
   const {
@@ -15,6 +18,11 @@ export default function CartPage() {
     removeFromCart,
     updateQuantity,
   } = useShop();
+  const { user, status } = useCustomerAuth();
+  const { quote, error, verifying } = useCartQuote("pickup");
+  const mrpTotal = quote ? quote.mrpSubtotalPaise / 100 : cartMrpTotal;
+  const savings = quote ? quote.productSavingsPaise / 100 : cartSavings;
+  const total = quote ? quote.subtotalPaise / 100 : cartTotal;
 
   return (
     <>
@@ -65,12 +73,14 @@ export default function CartPage() {
               </div>
               <aside className="order-summary">
                 <h2>Order summary</h2>
-                <div><span>MRP subtotal</span><strong>{formatPrice(cartMrpTotal)}</strong></div>
-                <div><span>Product discount</span><strong className="saving">&minus; {formatPrice(cartSavings)}</strong></div>
+                <div><span>MRP subtotal</span><strong>{formatPrice(mrpTotal)}</strong></div>
+                <div><span>Product discount</span><strong className="saving">&minus; {formatPrice(savings)}</strong></div>
                 <div><span>Delivery</span><strong>Calculated at checkout</strong></div>
-                <div className="summary-total"><span>Total before delivery</span><strong>{formatPrice(cartTotal)}</strong></div>
-                {cartSavings > 0 && <p className="order-saving-note">You save {formatPrice(cartSavings)} on products in this order.</p>}
-                <Link className="button primary" href="/checkout">Continue to checkout</Link>
+                <div className="summary-total"><span>Total before delivery</span><strong>{formatPrice(total)}</strong></div>
+                {savings > 0 && <p className="order-saving-note">You save {formatPrice(savings)} on products in this order.</p>}
+                {error && <p className="demo-note" role="alert">{error}</p>}
+                {verifying && <p className="demo-note">Verifying prices and availability…</p>}
+                {quote && status !== "checking" ? <Link className="button primary" href={verifiedUser(user) ? "/checkout" : "/account?next=%2Fcheckout"}>{verifiedUser(user) ? "Continue to checkout" : "Sign in to checkout"}</Link> : <button className="button primary" disabled>Continue to checkout</button>}
                 <Link className="continue-link" href="/shop">Continue shopping</Link>
               </aside>
             </div>

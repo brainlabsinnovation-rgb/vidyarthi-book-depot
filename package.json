@@ -1,0 +1,8 @@
+{
+  "name": "vidyarthi-book-depot",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "test:auth": "node scripts/auth-audit.mjs"
+  }
+}

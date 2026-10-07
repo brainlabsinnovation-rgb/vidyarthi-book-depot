@@ -1,4 +1,6 @@
-import Link from "next/link";
-import { Heart, MapPin, Package, UserRound } from "lucide-react";
-import { DemoForm } from "@/components/demo-form";
-export default function AccountPage() { return <><section className="page-hero"><div className="shell"><div className="breadcrumbs"><Link href="/">Home</Link><span>/</span><span>Account</span></div><h1>Your account</h1><p>Sign in to keep addresses, wishlists and orders together.</p></div></section><section className="section"><div className="shell account-layout"><DemoForm className="login-card" submitLabel="Continue" successTitle="Sign-in preview complete"><span className="account-icon"><UserRound /></span><h2>Welcome back</h2><p>Enter your email or mobile number and password.</p><label>Mobile number or email<input placeholder="Enter mobile number or email" required /></label><label>Password<input type="password" placeholder="Enter password" required /></label><div className="form-link-row"><label><input type="checkbox"/> Remember me</label><Link href="/forgot-password">Forgot password?</Link></div><div className="divider"><span>New here?</span></div><Link className="button secondary" href="/register">Create an account</Link><Link className="guest-link" href="/account/dashboard">View demo account dashboard</Link></DemoForm><div className="account-benefits"><h2>Everything in one place</h2><div><Package /><span><strong>Track every order</strong><small>Follow progress from payment to delivery or pickup.</small></span></div><div><Heart /><span><strong>Keep your wishlist</strong><small>Save useful products for school lists and future orders.</small></span></div><div><MapPin /><span><strong>Reuse saved addresses</strong><small>Move through checkout faster next time.</small></span></div></div></div></section></>; }
+import { CustomerAuthForm } from "@/components/customer-auth-form";
+import { safeReturnPath } from "@/lib/customer-auth";
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const params = await searchParams;
+  return <CustomerAuthForm mode="login" nextPath={safeReturnPath(params.next)} />;
+}

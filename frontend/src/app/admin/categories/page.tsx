@@ -1,2 +1,21 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { AdminTablePage } from "@/components/admin-table-page";
-export default function Categories(){return <AdminTablePage title="Categories" description="Manage the Books and Stationery departments and the subcategories inside each one." button="Add subcategory" actionHref="/admin/categories/new" columns={["Subcategory","Department","Products","Navigation","Status","Updated"]} rows={[["School Textbooks","Books","126","Visible","Published","Today"],["Children’s Books","Books","184","Visible","Published","Today"],["Competitive Exams","Books","98","Visible","Published","Yesterday"],["Academic & Reference","Books","112","Visible","Published","Yesterday"],["General Reading","Books","97","Visible","Published","2 days ago"],["Writing Supplies","Stationery","518","Visible","Published","Today"],["Notebooks & Paper","Stationery","436","Visible","Published","Today"],["School Essentials","Stationery","391","Visible","Published","Yesterday"],["Art & Craft","Stationery","308","Visible","Published","Yesterday"],["Office Supplies","Stationery","402","Visible","Published","2 days ago"],["Gifts & Return Gifts","Stationery","328","Visible","Published","2 days ago"]]} rowHrefs={["/admin/categories/school-textbooks/edit","/admin/categories/childrens-books/edit","/admin/categories/competitive-exams/edit","/admin/categories/academic-reference/edit","/admin/categories/general-reading/edit","/admin/categories/writing-supplies/edit","/admin/categories/notebooks-paper/edit","/admin/categories/school-essentials/edit","/admin/categories/art-craft/edit","/admin/categories/office-supplies/edit","/admin/categories/gifts-return-gifts/edit"]} />}
+
+type AdminCategory = { slug: string; name: string; departmentName: string; productCount: number; showInNavigation: boolean; active: boolean; updatedAt: string };
+
+export default function Categories() {
+  const [items, setItems] = useState<AdminCategory[]>([]);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/store/admin/categories", { signal: controller.signal, credentials: "include" })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Categories could not be loaded")))
+      .then((data) => setItems(data.items))
+      .catch((reason) => { if (reason?.name !== "AbortError") setError(reason.message); });
+    return () => controller.abort();
+  }, []);
+  const rows = items.map((item) => [item.name, item.departmentName, String(item.productCount), item.showInNavigation ? "Visible" : "Hidden", item.active ? "Published" : "Draft", new Date(item.updatedAt).toLocaleDateString("en-IN")]);
+  return <AdminTablePage title="Categories" description={error || "Manage Books and Stationery subcategories. Changes save to PostgreSQL."} button="Add subcategory" actionHref="/admin/categories/new" columns={["Subcategory","Department","Products","Navigation","Status","Updated"]} rows={rows} rowHrefs={items.map((item) => `/admin/categories/${item.slug}/edit`)} />;
+}

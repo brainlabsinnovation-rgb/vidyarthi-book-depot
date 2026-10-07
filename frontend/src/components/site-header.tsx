@@ -1,18 +1,31 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { BookOpen, ChevronDown, Heart, HelpCircle, MapPin, Menu, PencilRuler, Search, ShoppingCart, Store, Truck, UserRound, X } from "lucide-react";
 import { Brand } from "./brand";
+import { useCustomerAuth } from "./customer-auth-provider";
 import { useShop } from "./shop-provider";
-import { bookSubcategories, stationerySubcategories } from "@/data/catalog";
+import type { CatalogCategory } from "@/data/catalog";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false); const [query, setQuery] = useState(""); const router = useRouter(); const pathname = usePathname(); const { cartCount, wishlist } = useShop();
+  const { user } = useCustomerAuth();
+  const [categories, setCategories] = useState<CatalogCategory[]>([]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/store/catalog/categories", { signal: controller.signal })
+      .then((response) => response.ok ? response.json() as Promise<{ items: CatalogCategory[] }> : Promise.reject(new Error("Catalog unavailable")))
+      .then((result) => setCategories(result.items))
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+  const bookSubcategories = categories.filter((category) => category.department === "books");
+  const stationerySubcategories = categories.filter((category) => category.department === "stationery");
   function submitSearch(event: FormEvent) { event.preventDefault(); router.push(`/search?q=${encodeURIComponent(query.trim())}`); }
   return <>
     <div className="announcement"><div className="shell announcement-inner"><span><Truck /> Free pickup available</span><span>•</span><span>Secure payments</span><div className="announcement-links"><Link href="/contact"><Store /> Our Store</Link><Link href="/track-order">Track Order</Link><Link href="/contact"><HelpCircle /> Help & Support</Link></div></div></div>
-    <header className="site-header"><div className="shell header-main"><button className="icon-btn mobile-menu" onClick={() => setOpen(true)} aria-label="Open menu"><Menu /></button><Brand /><form className="header-search" onSubmit={submitSearch}><Search size={20} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search 3,000+ products" aria-label="Search products" /><button type="submit" aria-label="Submit search"><Search size={20} /></button></form><div className="header-actions"><Link href="/account" aria-label="Account"><UserRound /><span>Account<small>Sign in</small></span></Link><Link href="/wishlist" className="count-link" aria-label="Wishlist"><Heart /><span>Wishlist</span><b>{wishlist.length}</b></Link><Link href="/cart" className="count-link" aria-label="Cart"><ShoppingCart /><span>Cart</span><b>{cartCount}</b></Link></div></div>
+    <header className="site-header"><div className="shell header-main"><button className="icon-btn mobile-menu" onClick={() => setOpen(true)} aria-label="Open menu"><Menu /></button><Brand /><form className="header-search" onSubmit={submitSearch}><Search size={20} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search 3,000+ products" aria-label="Search products" /><button type="submit" aria-label="Submit search"><Search size={20} /></button></form><div className="header-actions"><Link href={user ? "/account/dashboard" : "/account"} aria-label="Account"><UserRound /><span>Account<small>{user ? user.name.split(" ")[0] : "Sign in"}</small></span></Link><Link href="/wishlist" className="count-link" aria-label="Wishlist"><Heart /><span>Wishlist</span><b>{wishlist.length}</b></Link><Link href="/cart" className="count-link" aria-label="Cart"><ShoppingCart /><span>Cart</span><b>{cartCount}</b></Link></div></div>
       <div className="shell mobile-search-wrap"><form className="header-search" onSubmit={submitSearch}><Search size={20} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search 3,000+ products" aria-label="Search products" /></form></div>
       <nav className="category-nav" aria-label="Main navigation"><div className="shell nav-inner department-nav">
         <div className="department-nav-item"><Link className={pathname.startsWith("/books") ? "active" : ""} href="/books"><BookOpen /> Books <ChevronDown /></Link><div className="mega-menu"><div><span className="mega-icon books"><BookOpen /></span><strong>Books</strong><p>Learning, preparation and reading for every age.</p><Link href="/books">Explore all books <ChevronDown /></Link></div><div className="mega-links">{bookSubcategories.map(category=><Link href={`/books/${category.slug}`} key={category.slug}><span>{category.name}</span><small>{category.short}</small></Link>)}</div></div></div>

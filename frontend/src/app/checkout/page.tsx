@@ -1,33 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, CreditCard, MapPin, Store } from "lucide-react";
+import { CreditCard, MapPin, Store } from "lucide-react";
 import { useState } from "react";
+import { RequireCustomer } from "@/components/require-customer";
+import { useCustomerAuth } from "@/components/customer-auth-provider";
 import { useShop } from "@/components/shop-provider";
 import { formatPrice } from "@/data/catalog";
+import { useCartQuote } from "@/lib/use-cart-quote";
 
 type FulfilmentMethod = "delivery" | "pickup";
 
-export default function CheckoutPage() {
-  const { cart, cartMrpTotal, cartSavings, cartTotal } = useShop();
-  const [placed, setPlaced] = useState(false);
+export default function CheckoutPage() { return <RequireCustomer nextPath="/checkout"><CheckoutContent /></RequireCustomer>; }
+
+function CheckoutContent() {
+  const { user } = useCustomerAuth();
+  const { cart } = useShop();
   const [fulfilment, setFulfilment] = useState<FulfilmentMethod>("delivery");
   const isPickup = fulfilment === "pickup";
-
-  if (placed) {
-    return (
-      <section className="section">
-        <div className="shell success-card">
-          <CheckCircle2 />
-          <span className="kicker">Demo order confirmed</span>
-          <h1>Thank you! Your order preview is ready.</h1>
-          <p>This is a static frontend demonstration. A real order and payment will be created after the backend and Razorpay integration are approved.</p>
-          <b>Demo order VBD-2026-1042</b>
-          <Link className="button primary" href="/orders">View order</Link>
-        </div>
-      </section>
-    );
-  }
+  const { quote, error, verifying } = useCartQuote(fulfilment, true);
 
   return (
     <>
@@ -44,9 +35,9 @@ export default function CheckoutPage() {
             <section>
               <div className="form-section-title"><span>1</span><div><h2>Contact information</h2><p>We will use this to share order updates.</p></div></div>
               <div className="form-grid">
-                <label>Full name<input placeholder="Your full name" /></label>
-                <label>Mobile number<input placeholder="+91 00000 00000" /></label>
-                <label className="full">Email address<input type="email" placeholder="you@example.com" /></label>
+                <label>Full name<input defaultValue={user?.name} placeholder="Your full name" /></label>
+                <label>Mobile number<input defaultValue={user?.phoneNumberVerified ? user.phoneNumber : ""} placeholder="+91 00000 00000" /></label>
+                <label className="full">Email address<input type="email" defaultValue={user?.emailVerified ? user.email : ""} placeholder="you@example.com" /></label>
               </div>
             </section>
             <section>
@@ -72,7 +63,7 @@ export default function CheckoutPage() {
               )}
             </section>
             <section>
-              <div className="form-section-title"><span>3</span><div><h2>Payment</h2><p>Secure online payment through Razorpay after integration.</p></div></div>
+              <div className="form-section-title"><span>3</span><div><h2>Payment</h2><p>Online payment will be available after the shop’s Razorpay account is connected.</p></div></div>
               <div className="payment-preview"><CreditCard /><div><strong>Online payment</strong><p>UPI, cards, net banking and supported wallets</p></div><span>Secure</span></div>
             </section>
           </div>
@@ -81,18 +72,20 @@ export default function CheckoutPage() {
             {cart.length ? cart.map((line) => (
               <div className="checkout-product-line" key={line.product.slug}>
                 <span>{line.product.name} x {line.quantity}</span>
-                <strong>{formatPrice(line.product.price * line.quantity)}</strong>
+                <strong>{formatPrice((quote?.items.find((item) => item.slug === line.product.slug)?.lineTotalPaise ?? line.product.price * line.quantity * 100) / 100)}</strong>
               </div>
             )) : (
-              <p className="muted-copy">Your cart is empty. This button still demonstrates the static success screen.</p>
+              <p className="muted-copy">Your cart is empty. Add products before checking out.</p>
             )}
-            <div className="summary-break"><span>MRP subtotal</span><strong>{formatPrice(cartMrpTotal)}</strong></div>
-            <div><span>Product discount</span><strong className="saving">&minus; {formatPrice(cartSavings)}</strong></div>
+            <div className="summary-break"><span>MRP subtotal</span><strong>{quote ? formatPrice(quote.mrpSubtotalPaise / 100) : "Verifying…"}</strong></div>
+            <div><span>Product discount</span><strong className="saving">{quote ? `− ${formatPrice(quote.productSavingsPaise / 100)}` : "—"}</strong></div>
             <div><span>{isPickup ? "Store pickup" : "Delivery"}</span><strong>{isPickup ? "Free" : "Calculated after address"}</strong></div>
-            <div className="summary-total"><span>{isPickup ? "Order total" : "Total before delivery"}</span><strong>{formatPrice(cartTotal)}</strong></div>
-            {cartSavings > 0 && <p className="order-saving-note">You save {formatPrice(cartSavings)} on products in this order.</p>}
-            <button className="button primary" onClick={() => setPlaced(true)}>Place demo order</button>
-            <small className="demo-note">No payment will be collected in this static preview.</small>
+            <div className="summary-total"><span>{isPickup ? "Order total" : "Total before delivery"}</span><strong>{quote ? formatPrice(quote.subtotalPaise / 100) : "—"}</strong></div>
+            {quote && quote.productSavingsPaise > 0 && <p className="order-saving-note">You save {formatPrice(quote.productSavingsPaise / 100)} on products in this order.</p>}
+            {error && <p className="demo-note" role="alert">{error}</p>}
+            {verifying && <p className="demo-note">Verifying prices and availability…</p>}
+            <button className="button primary" disabled>Online payment coming soon</button>
+            <small className="demo-note">The Razorpay test account and delivery rules are needed before orders can be placed.</small>
           </aside>
         </div>
       </section>

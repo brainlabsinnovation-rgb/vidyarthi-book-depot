@@ -1,3 +1,32 @@
-import { ArrowDown, ArrowUp, Download, IndianRupee, Package, ShoppingBag, Users } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { Download, IndianRupee, Package, ShoppingBag, Users } from "lucide-react";
 import { AdminShell } from "@/components/admin-shell";
-export default function Reports(){return <AdminShell title="Reports" description="Understand sales, products, customers and inventory movement." action={<button className="button primary"><Download/> Export report</button>}><div className="admin-stats"><article><IndianRupee/><span>Net sales</span><strong>₹2,84,560</strong><small><ArrowUp/> 14.2% this month</small></article><article><ShoppingBag/><span>Orders</span><strong>412</strong><small><ArrowUp/> 8.6% this month</small></article><article><Package/><span>Average order</span><strong>₹691</strong><small><ArrowUp/> 5.1% this month</small></article><article><Users/><span>Returning customers</span><strong>38%</strong><small className="negative"><ArrowDown/> 1.2% this month</small></article></div><div className="admin-columns"><section className="admin-panel"><div className="panel-head"><h2>Sales overview</h2><select><option>Last 30 days</option><option>Last 3 months</option></select></div><div className="bar-chart">{[38,55,46,68,61,84,73,92,77,96,82,100].map((height,index)=><i key={index} style={{height:`${height}%`}}><span>{index+1}</span></i>)}</div></section><section className="admin-panel"><div className="panel-head"><h2>Top categories</h2></div><div className="metric-list"><div><span>School Supplies</span><b>38%</b></div><progress value="38" max="100"/><div><span>Books</span><b>24%</b></div><progress value="24" max="100"/><div><span>Art & Craft</span><b>18%</b></div><progress value="18" max="100"/><div><span>Gifts</span><b>12%</b></div><progress value="12" max="100"/></div></section></div></AdminShell>}
+import { formatPrice } from "@/data/catalog";
+
+type Reports = { orders: number; salesPaise: number; customers: number; averageOrderPaise: number;
+  monthlySales: Array<{ month: string; salesPaise: number }>;
+  categories: Array<{ name: string; salesPaise: number }> };
+
+export default function ReportsPage() {
+  const [report, setReport] = useState<Reports | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/store/admin/reports", { signal: controller.signal, credentials: "include" })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Reports could not be loaded")))
+      .then((data) => setReport(data))
+      .catch((reason) => { if (reason?.name !== "AbortError") setError(reason.message); });
+    return () => controller.abort();
+  }, []);
+  function exportCsv() {
+    if (!report) return;
+    const lines = ["Metric,Value", `Net sales,${report.salesPaise / 100}`, `Paid orders,${report.orders}`, `Customers,${report.customers}`, `Average order,${report.averageOrderPaise / 100}`, "", "Month,Sales", ...report.monthlySales.map((item) => `${new Date(item.month).toISOString().slice(0, 7)},${item.salesPaise / 100}`)];
+    const url = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a"); link.href = url; link.download = "vidyarthi-sales-report.csv"; link.click(); URL.revokeObjectURL(url);
+  }
+  const max = Math.max(1, ...(report?.monthlySales.map((item) => item.salesPaise) ?? []));
+  const categoryTotal = report?.categories.reduce((sum, item) => sum + item.salesPaise, 0) ?? 0;
+  return <AdminShell title="Reports" description={error || "Sales from captured payments and order records."} action={<button className="button primary" onClick={exportCsv} disabled={!report}><Download /> Export report</button>}><div className="admin-stats"><article><IndianRupee/><span>Net sales</span><strong>{report ? formatPrice(report.salesPaise / 100) : "—"}</strong><small>Captured payments</small></article><article><ShoppingBag/><span>Paid orders</span><strong>{report?.orders ?? "—"}</strong><small>All time</small></article><article><Package/><span>Average order</span><strong>{report ? formatPrice(report.averageOrderPaise / 100) : "—"}</strong><small>Paid orders</small></article><article><Users/><span>Customers</span><strong>{report?.customers ?? "—"}</strong><small>With paid orders</small></article></div><div className="admin-columns"><section className="admin-panel"><div className="panel-head"><h2>Sales by month</h2></div>{report?.monthlySales.length ? <div className="bar-chart">{report.monthlySales.map((item) => <i key={item.month} style={{ height: `${Math.max(4, item.salesPaise / max * 100)}%` }}><span>{new Date(item.month).toLocaleDateString("en-IN", { month: "short" })}</span></i>)}</div> : <p className="muted-copy">No paid orders yet.</p>}</section><section className="admin-panel"><div className="panel-head"><h2>Top categories</h2></div>{report?.categories.length ? <div className="metric-list">{report.categories.map((item) => <div key={item.name}><span>{item.name}</span><b>{categoryTotal ? Math.round(item.salesPaise / categoryTotal * 100) : 0}%</b><progress value={item.salesPaise} max={categoryTotal || 1}/></div>)}</div> : <p className="muted-copy">Category sales will appear after paid orders.</p>}</section></div></AdminShell>;
+}

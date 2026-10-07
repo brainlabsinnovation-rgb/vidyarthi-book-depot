@@ -1,14 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, GraduationCap, HandHeart, Headphones, PackageCheck, PencilRuler, ShieldCheck, Store, Users } from "lucide-react";
-import { bookSubcategories, departments, productsByDepartment, stationerySubcategories } from "@/data/catalog";
+import { getCategories, getDepartments, getProducts } from "@/lib/catalog-api";
 import { ProductGrid } from "@/components/product-grid";
 import { NewsletterForm } from "@/components/newsletter-form";
 
-const bookProducts=productsByDepartment("books");
-const stationeryProducts=productsByDepartment("stationery");
-
-export default function Home() {
+export default async function Home() {
+  const [departments, bookSubcategories, stationerySubcategories, books, stationery] = await Promise.all([
+    getDepartments(), getCategories("books"), getCategories("stationery"),
+    getProducts({ department: "books", limit: 4 }), getProducts({ department: "stationery", limit: 4 }),
+  ]);
+  const bookProducts = books.items;
+  const stationeryProducts = stationery.items;
   return <>
     <section className="home-hero"><div className="hero-inner"><Image src="/images/hero-stationery-v2.png" alt="School stationery, books, art supplies and gifts" fill priority sizes="100vw" /><div className="shell hero-copy"><h1>Everything for school,<br />creativity & gifting</h1><p>Enter through Books or Stationery, then browse the exact subcategory and products you need.</p><div className="hero-actions"><Link className="button primary" href="/stationery">Shop stationery <PencilRuler size={18} /></Link><Link className="button secondary" href="/books">Browse books <BookOpen size={18} /></Link></div><div className="hero-notes"><span><GraduationCap /><b>For Every Learner<small>School • College • Life</small></b></span><span><Users /><b>Trusted by Families<small>In Our Community</small></b></span><span><HandHeart /><b>Small Store, Big Support</b></span></div></div></div></section>
     <section className="section department-choice" id="departments"><div className="shell"><div className="section-head"><div><span className="kicker">Start shopping</span><h2>Choose a department</h2><p>Books and Stationery have their own subcategories and product collections.</p></div></div><div className="department-grid">{departments.map((department,index)=><Link className={`department-card ${department.slug}`} href={`/${department.slug}`} key={department.slug}><div><span>{index===0?<BookOpen/>:<PencilRuler/>}</span><small>Vidyarthi</small><h2>{department.name}</h2><p>{department.short}</p><b>Enter {department.name} <ArrowRight/></b></div><Image src={department.image} alt="" width={420} height={300}/></Link>)}</div></div></section>
